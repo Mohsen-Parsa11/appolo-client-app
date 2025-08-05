@@ -36,6 +36,11 @@ const UPDATE_POST = gql`
     }
   }`
 
+const DELETE_POST = gql`
+  mutation DeletePost($id: ID!) {
+    deletePost(id: $id)
+  }`
+
 function App() {
   const [post, setPost] = useState<{ title?: string; body?: string }>({});
   const { loading, error, data } = useQuery(GET_POSTS);
@@ -45,7 +50,9 @@ function App() {
   const [updatePost] = useMutation(UPDATE_POST, {
     refetchQueries: [{ query: GET_POSTS}]
 });
-
+const [deletePost] = useMutation(DELETE_POST, {
+  refetchQueries: [{ query: GET_POSTS }],
+});
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -61,15 +68,21 @@ function App() {
     });
   };
 
-  const handleUpdatePost = async ()=>{
+  const handleUpdatePost = async (postId: string)=>{
     await updatePost({
       variables: {
-        id: '1',
+        id: postId,
         input: {
           title: post.title,
           body: post.body
         }
       }
+    })
+  }
+
+  const handleDeletePost = async (postId: string) =>{
+    await deletePost({
+      variables: {id: postId}
     })
   }
 
@@ -91,7 +104,6 @@ function App() {
           }
         />
         <button onClick={handleCreatePost}>Create Post</button>
-        <button onClick={handleUpdatePost}>Update Post</button>
       </div>
       <div>
         {data.posts.data.map((post: Post) => (
@@ -99,6 +111,8 @@ function App() {
             <p>{post.id}</p>
             <p>{post.title}</p>
             <p>{post.body}</p>
+            <button onClick={()=>handleUpdatePost(post.id)}>Update Post</button>
+            <button onClick={()=>handleDeletePost(post.id)}>Delete Post</button>
           </div>
         ))}
       </div>
