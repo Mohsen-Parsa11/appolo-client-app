@@ -1,63 +1,38 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useState } from "react";
+import { GET_POSTS } from "./graphql/queries";
+import { CREATE_POST, DELETE_POST, UPDATE_POST } from "./graphql/mutaion";
+import PostList from "./conponents/postList";
 
-interface Post {
-  id: string;
-  title: string;
-  body: string;
-}
-
-const GET_POSTS = gql`
-  query GetPosts {
-    posts {
-      data {
-        id
-        title
-        body
-      }
-    }
-  }
-`;
-
-const CREATE_POST = gql`
-  mutation CreatePost($input: CreatePostInput!) {
-    createPost(input: $input) {
-      title
-      body
-    }
-  }
-`;
-
-const UPDATE_POST = gql`
-  mutation UpdatePost($id: ID!, $input: UpdatePostInput!){
-    updatePost(id: $id, input: $input){
-    title
-    body
-    }
-  }`
-
-const DELETE_POST = gql`
-  mutation DeletePost($id: ID!) {
-    deletePost(id: $id)
-  }`
 
 function App() {
+  // State to hold the post data
   const [post, setPost] = useState<{ title?: string; body?: string }>({});
+
+  // Apollo Client hooks for querying and mutating data
   const { loading, error, data } = useQuery(GET_POSTS);
+
+  // Using the CREATE_POST mutation
   const [createPost] = useMutation(CREATE_POST, {
     refetchQueries: [{ query: GET_POSTS }],
   });
+
+  // Using the DELETE_POST mutations  
   const [updatePost] = useMutation(UPDATE_POST, {
     refetchQueries: [{ query: GET_POSTS}]
 });
+
+// Using the DELETE_POST mutation
 const [deletePost] = useMutation(DELETE_POST, {
   refetchQueries: [{ query: GET_POSTS }],
 });
+
+  // Handle loading and error states
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
+  // Function to handle creating a post
   const handleCreatePost = async () => {
-    console.log(post);
     await createPost({
       variables: {
         input: {
@@ -68,6 +43,7 @@ const [deletePost] = useMutation(DELETE_POST, {
     });
   };
 
+  // Functions to handle updating and deleting posts
   const handleUpdatePost = async (postId: string)=>{
     await updatePost({
       variables: {
@@ -80,6 +56,7 @@ const [deletePost] = useMutation(DELETE_POST, {
     })
   }
 
+  // Function to handle deleting a post
   const handleDeletePost = async (postId: string) =>{
     await deletePost({
       variables: {id: postId}
@@ -105,17 +82,11 @@ const [deletePost] = useMutation(DELETE_POST, {
         />
         <button onClick={handleCreatePost}>Create Post</button>
       </div>
-      <div>
-        {data.posts.data.map((post: Post) => (
-          <div key={post.id}>
-            <p>{post.id}</p>
-            <p>{post.title}</p>
-            <p>{post.body}</p>
-            <button onClick={()=>handleUpdatePost(post.id)}>Update Post</button>
-            <button onClick={()=>handleDeletePost(post.id)}>Delete Post</button>
-          </div>
-        ))}
-      </div>
+        <PostList
+        posts={data.posts.data}
+        onUpdate={handleUpdatePost}
+        onDelete={handleDeletePost}
+      />
     </>
   );
 }
