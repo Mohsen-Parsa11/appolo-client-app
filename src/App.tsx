@@ -28,12 +28,23 @@ const CREATE_POST = gql`
   }
 `;
 
+const UPDATE_POST = gql`
+  mutation UpdatePost($id: ID!, $input: UpdatePostInput!){
+    updatePost(id: $id, input: $input){
+    title
+    body
+    }
+  }`
+
 function App() {
   const [post, setPost] = useState<{ title?: string; body?: string }>({});
   const { loading, error, data } = useQuery(GET_POSTS);
   const [createPost] = useMutation(CREATE_POST, {
     refetchQueries: [{ query: GET_POSTS }],
   });
+  const [updatePost] = useMutation(UPDATE_POST, {
+    refetchQueries: [{ query: GET_POSTS}]
+});
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -49,6 +60,18 @@ function App() {
       },
     });
   };
+
+  const handleUpdatePost = async ()=>{
+    await updatePost({
+      variables: {
+        id: '1',
+        input: {
+          title: post.title,
+          body: post.body
+        }
+      }
+    })
+  }
 
   return (
     <>
@@ -68,6 +91,7 @@ function App() {
           }
         />
         <button onClick={handleCreatePost}>Create Post</button>
+        <button onClick={handleUpdatePost}>Update Post</button>
       </div>
       <div>
         {data.posts.data.map((post: Post) => (
