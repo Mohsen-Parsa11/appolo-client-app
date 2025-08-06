@@ -43,7 +43,7 @@ const [deletePost] = useMutation(DELETE_POST, {
     });
   };
 
-  // Functions to handle updating and deleting posts
+  // Functions to handle updating posts
   const handleUpdatePost = async (postId: string)=>{
     await updatePost({
       variables: {
