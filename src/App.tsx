@@ -33,7 +33,6 @@ const [deletePost] = useMutation(DELETE_POST, {
 
   // Function to handle creating a post
   const handleCreatePost = async () => {
-    console.log(post);
     await createPost({
       variables: {
         input: {
