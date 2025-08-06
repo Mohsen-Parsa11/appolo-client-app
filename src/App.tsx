@@ -63,6 +63,7 @@ const [deletePost] = useMutation(DELETE_POST, {
     })
   }
 
+  
   return (
     <>
       <div>
